@@ -1,10 +1,9 @@
 var canvas = document.getElementById("gameCanvas");
 
-var Player = function()
+var Enemy = function()
 {
 	this.image = document.createElement("img");
 	
-	this.a = new Vector2;
 	this.x = canvas.width/2;
 	this.y = canvas.height/2;
 	
@@ -18,17 +17,18 @@ var Player = function()
 	
 	this.rotation = 0;
 	
-	this.image.src = "hero.png";
+	this.image.src = "enemy.png";
 };
 
-Player.prototype.update = function(deltaTime)
+Enemy.prototype.update = function(deltaTime)
 {
-	if(keyboard.isKeyDown(keyboard.KEY_SPACE) === true){
+	if(keyboard.isKeyDown(keyboard.KEY_SPACE) === true)
+	{
 		this.rotation -= deltaTime;
 	}
 }
 
-Player.prototype.draw = function()
+Enemy.prototype.draw = function()
 {
 	context.save();
 		context.translate(this.x, this.y);
