@@ -1,3 +1,5 @@
+var canvas = document.getElementById("gameCanvas");
+
 var Player = function()
 {
 	this.image = document.createElement("img");
@@ -20,7 +22,11 @@ var Player = function()
 
 Player.prototype.update = function(deltaTime)
 {
-	this.rotation += deltaTime;
+	if(keyboard.isKeyDown(keyboard.KEY_SPACE) === true){
+		this.rotation -= deltaTime;
+	}else{
+		this.rotation += deltaTime;
+	}
 }
 
 Player.prototype.draw = function()
@@ -31,3 +37,4 @@ Player.prototype.draw = function()
 		context.drawImage(this.image, -this.width/2, -this.height/2);
 	context.restore();
 }
+
