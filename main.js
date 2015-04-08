@@ -8,6 +8,22 @@ var context = canvas.getContext("2d");
 var startFrameMillis = Date.now();
 var endFrameMillis = Date.now();
 
+var tileset = document.createElement("img");
+tileset.src = "tileset.png";
+
+var LAYER_COUNT = 3;
+var MAP = {tw:60, th:15};
+var TILE = 35;
+var TILESET_TILE = TILE * 2;
+var TILESET_PADDING = 2;
+var TILESET_SPACING = 2;
+var TILESET_COUNT_X = 14;
+var TILESET_COUNT_Y = 14;
+
+var LAYER_BACKGROUND = 2;
+var LAYER_PLATFORMS = 1;
+var LAYER_LADDERS = 0;
+
 // This function will return the time in seconds since the function 
 // was last called
 // You should only call this function once per frame
@@ -31,44 +47,71 @@ function getDeltaTime()
 	return deltaTime;
 }
 
-//-------------------- Don't modify anything above here
+var cells = [];
+function initialize(){
+	for(var layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++){
+		cells[layerIdx] = [];
+		var idx = 0;
+		for(var y = 0; y < Level1.layers[layerIdx].height; y++){
+			cells[layerIdx][y] = [];
+			for(var x = 0; x < Level1.layers[layerIdx].width; x++){
+				if(Level1.layers[layerIdx].data[idx] != 0){
+					cells[layerIdx][y][x] = 1;
+					cells[layerIdx][y-1][x] = 1;
+					cells[layerIdx][y-1][x+1] = 1;
+					cells[layerIdx][y][x+1] = 1;
+				}else if(cells[layerIdx][y][x] != 1){
+					cells[layerIdx][y][x] = 0;
+				}
+				idx++;
+			}
+		}
+	}
+}
+
+/** Axis Aligned Bounding Box checks **/
+function intersects(x1, y1, w1, h1, x2, y2, w2, h2){
+	if(y2 + h2 < y1 || x2 + w2 < x1 || x2 > x1 + w1 || y2 > y1 + h1){
+		return false;
+	}else
+		return true;
+}
 
 var SCREEN_WIDTH = canvas.width;
 var SCREEN_HEIGHT = canvas.height;
 
+function tileToPixel(tileCoord){
+	return tileCoord * TILE;
+}
 
-// some variables to calculate the Frames Per Second (FPS - this tells use
-// how fast our game is running, and allows us to make the game run at a 
-// constant speed)
-var fps = 0;
-var fpsCount = 0;
-var fpsTime = 0;
+function pixelToTile(pixel){
+	return Math.floor(pixel / TILE);
+}
 
-var LAYER_COUNT = 3;
-var MAP = {tw:80, th:20};
-var TILE = 35;
-var TILESET_TILE = 70;
-var TILESET_PADDING = 2;
-var TILESET_SPACING = 2;
-var TILESET_COUNT_X = 14;
-var TILESET_COUNT_Y = 14;
+function cellAtTileCoord(layer, tx, ty){
+	if(tx<0 || tx>=MAP.tw || ty<0){
+		return 1;
+	}
+	if(ty>=MAP.th){
+		return 0;
+	}
+	return cells[layer][ty][tx];
+}
 
-var tileset = document.createElement("img");
-tileset.src = "tileset.png";
+function cellAtPixelCoord(layer, x, y){
+	var tx = pixelToTile(x);
+	var ty = pixelToTile(y);
+	
+	return cellAtTileCoord(layer, tx, ty);
+}
 
-function drawMap()
-{
-	for(var layerIdx = 0; layerIdx<LAYER_COUNT; layerIdx++)
-	{
+function drawMap(){
+	for(var layerIdx=0; layerIdx<LAYER_COUNT; layerIdx++){
 		var idx = 0;
-		for( var y = 0; y < level1.layers[layerIdx].height; y++ )
-		{
-			for( var x = 0; x < level1.layers[layerIdx].width; x++ )
-			{
-				if( level1.layers[layerIdx].data[idx] != 0 )
-				{
-					//the tiles in the Tiled map are base 1 (meaning a value of 0 means no tile), so subtract one from the tileset id to get the correct tile
-					var tileIndex = level1.layers[layerIdx].data[idx] - 1;
+		for( var y = 0; y < Level1.layers[layerIdx].height; y++ ){
+			for( var x = 0; x < Level1.layers[layerIdx].width; x++ ){
+				if( Level1.layers[layerIdx].data[idx] != 0 ){
+					var tileIndex = Level1.layers[layerIdx].data[idx] - 1;
 					var sx = TILESET_PADDING + (tileIndex % TILESET_COUNT_X) * (TILESET_TILE + TILESET_SPACING);
 					var sy = TILESET_PADDING + (Math.floor(tileIndex / TILESET_COUNT_Y)) * (TILESET_TILE + TILESET_SPACING);
 					context.drawImage(tileset, sx, sy, TILESET_TILE, TILESET_TILE, x*TILE, (y-1)*TILE, TILESET_TILE, TILESET_TILE);
@@ -79,6 +122,9 @@ function drawMap()
 	}
 }
 
+var fps = 0;
+var fpsCount = 0;
+var fpsTime = 0;
 
 function run()
 {
@@ -89,11 +135,18 @@ function run()
 	
 	drawMap();
 	
-	player.update(deltaTime);
-	player.draw();
+	if(!player.playerDead){
+		player.update(deltaTime);
+		player.draw();
+	}
 	
-	enemy.update(deltaTime);
-	enemy.draw();
+	/*enemy.update(deltaTime);
+	enemy.draw();*/
+	
+	var hit = intersects(player.xPos - player.width / 2, player.yPos - player.height / 2, player.width, player.height, enemy.xPos - enemy.width / 2, enemy.yPos - enemy.height / 2, enemy.width, enemy.height);
+	if(hit == true){
+		//player.playerDead = true;
+	}
 	
 	// update the frame counter 
 	fpsTime += deltaTime;
@@ -106,12 +159,12 @@ function run()
 	}		
 		
 	// draw the FPS
-	context.fillStyle = "green";
-	context.font="20px Arial";
-	context.fillText(fps, 5, 20, 100);
+	context.fillStyle = "#000000";
+	context.font="14px Verdana";
+	context.fillText("FPS: " + fps, 5, 20, 100);
 }
 
-
+initialize();
 //-------------------- Don't modify anything below here
 
 
