@@ -22,10 +22,10 @@ var Player = function() {
 	this.sprite.buildAnimation(12, 8, 165, 126, 0.05, [65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78]);//RIGHT WALK
 	this.sprite.buildAnimation(12, 8, 165, 126, 0.05, [42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 51]);//climb
 	this.sprite.buildAnimation(12, 8, 165, 126, 0.05, [28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]);//shoot left
-	this.sprite.buildAnimation(12, 8, 165, 126, 0.05, [79, 80, 81, 82, 83, 84, 85, 86, 87, 8, 89, 90, 91, 92]);//shoot right
+	this.sprite.buildAnimation(12, 8, 165, 126, 0.05, [79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92]);//shoot right
 	
 	this.position = new Vector2();
-	this.position.set(100, 500);
+	this.position.set(100, 550);
 	
 	this.width = 119;
 	this.height = 103;
@@ -41,7 +41,7 @@ var Player = function() {
 	this.falling = true;
 	this.jumping = false;
 	
-	this.direction = LEFT;
+	this.direction = RIGHT;
 	
 	this.rotation = 0;
 };
@@ -72,7 +72,9 @@ Player.prototype.update = function(deltaTime){
 	var playerGravity = TILE * 9.8 * 6;
 	acceleration.y = playerGravity;
 	var jumpForce = 50000
-
+	
+	var currFrame = this.sprite.currentFrame;
+	
 	if(keyboard.isKeyDown(keyboard.KEY_A) == true ){
 		acceleration.x -= playerAccel;
 		left = true;
@@ -135,6 +137,29 @@ Player.prototype.update = function(deltaTime){
 	
 	var nx = this.position.x % TILE;
 	var ny = this.position.y % TILE;
+	
+	if ( cellAtTileCoord(LAYER_LADDERS, tx, ty) ||
+		(cellAtTileCoord(LAYER_LADDERS, tx+1, ty) && nx) ||
+		(cellAtTileCoord(LAYER_LADDERS, tx, ty+1) && ny))
+	{
+		if(this.sprite.currentAnimation != ANIM_CLIMB)
+		{
+			this.sprite.setAnimation(ANIM_CLIMB);
+			this.sprite.currentFrame = currFrame;
+		}		
+		if(keyboard.isKeyDown(keyboard.KEY_W))
+		{
+			this.velocity.yPos = -600;
+		}
+		else if(keyboard.isKeyDown(keyboard.KEY_S))
+		{
+			this.velocity.yPos = 600;
+		}
+		else
+		{
+			this.velocity.yPos = 0;
+		}
+	}
 	
 	var cell = cellAtTileCoord(LAYER_PLATFORMS, tx, ty);
 	var cellRight = cellAtTileCoord(LAYER_PLATFORMS, tx+1, ty);

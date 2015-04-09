@@ -142,6 +142,11 @@ function run()
 	
 	drawMap();
 	
+	if((player.position.xPos >= 280 && player.position.xPos <= 280 + 70) && (player.position.yPos >= 560 && player.position.yPos <= 560 + 425))
+	{
+		context.strokeRect(280, 560, 70, 425);
+	}
+	
 	if(!player.playerDead){
 		player.update(deltaTime);
 		player.draw();
