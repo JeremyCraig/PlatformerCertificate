@@ -1,6 +1,24 @@
+var LAYER_COUNT = 6;
+var MAP = {tw:80, th:20};
+var TILE = 35;
+var TILESET_TILE = TILE * 2;
+var TILESET_PADDING = 2;
+var TILESET_SPACING = 2;
+var TILESET_COUNT_X = 14;
+var TILESET_COUNT_Y = 14;
+
 var player = new Player();
 var keyboard = new Keyboard();
 var enemy = new Enemy();
+
+var LAYER_CONTAINERS = 5;
+var LAYER_LADDERS = 4;
+var LAYER_WATER = 3;
+var LAYER_PLATFORMS = 2;
+var LAYER_BACKGROUND = 1;
+var LAYER_BACKWALL = 0;
+
+
 
 var canvas = document.getElementById("gameCanvas");
 var context = canvas.getContext("2d");
@@ -10,20 +28,6 @@ var endFrameMillis = Date.now();
 
 var tileset = document.createElement("img");
 tileset.src = "tileset.png";
-
-var LAYER_COUNT = 3;
-var MAP = {tw:60, th:15};
-var TILE = 35;
-var TILESET_TILE = TILE * 2;
-var TILESET_PADDING = 2;
-var TILESET_SPACING = 2;
-var TILESET_COUNT_X = 14;
-var TILESET_COUNT_Y = 14;
-
-var LAYER_BACKGROUND = 2;
-var LAYER_PLATFORMS = 1;
-var LAYER_LADDERS = 0;
-
 // This function will return the time in seconds since the function 
 // was last called
 // You should only call this function once per frame
@@ -128,10 +132,13 @@ var fpsTime = 0;
 
 function run()
 {
-	context.fillStyle = "#ccc";		
+	context.fillStyle = "#3399FF";		
 	context.fillRect(0, 0, canvas.width, canvas.height);
 	
 	var deltaTime = getDeltaTime();
+	if(deltaTime > 0.03){
+		deltaTime = 0.03;
+	}
 	
 	drawMap();
 	
@@ -159,9 +166,9 @@ function run()
 	}		
 		
 	// draw the FPS
-	context.fillStyle = "#000000";
-	context.font="14px Verdana";
-	context.fillText("FPS: " + fps, 5, 20, 100);
+	context.fillStyle = "green";
+	context.font="25px Verdana";
+	context.fillText(fps, 5, 20, 100);
 }
 
 initialize();
