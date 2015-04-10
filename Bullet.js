@@ -1,20 +1,30 @@
-
-var Bullet = function()
+var Bullet = function(x, y, moveRight)
 {
-	this.image = document.createElement("img");
-	
-	this.x = canvas.width/2;
-	this.y = canvas.height/2;
-	
-	this.width = 159;
-	this.height = 163
-	
-	this.velocityX = 0;
-	this.velocityY = 0;
-	
-	this.angularVelocity = 0;
-	
-	this.rotation = 0;
-	
-	this.image.src = "bullet.png";
-};
+	this.sprite = new Sprite("bullet.png");
+	this.sprite.buildAnimation(1, 1, 32, 32, -1, [0]);
+	this.sprite.setAnimationOffset(0, 0, 0);
+	this.sprite.setLoop(0, false);
+
+	this.position = new Vector2();
+	this.position.set(x, y);
+
+	this.velocity = new Vector2();
+
+	this.moveRight = moveRight;
+	if(this.moveRight == true)
+		this.velocity.set(MAXDX *2, 0);
+	else
+		this.velocity.set(-MAXDX *2, 0);
+}
+
+Bullet.prototype.update = function(dt)
+{
+	this.sprite.update(dt);
+	this.position.x = Math.floor(this.position.x + (dt * this.velocity.x));
+}
+
+Bullet.prototype.draw = function()
+{
+	var screenX = this.position.x - worldOffsetX;
+	this.sprite.draw(context, screenX, this.position.y);
+}
